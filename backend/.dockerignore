@@ -1,0 +1,16 @@
+# Bỏ qua thư mục môi trường ảo (vì Docker sẽ tự tạo cái mới)
+.venv
+venv
+
+# Bỏ qua file rác Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+
+# Bỏ qua git
+.git
+.gitignore
+
+# Bỏ qua file biến môi trường (Bảo mật)
+.env

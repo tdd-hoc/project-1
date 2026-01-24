@@ -1,0 +1,21 @@
+from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.orm import relationship
+from app.db.base import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    full_name = Column(String(100), index=True)
+    email = Column(String(255), unique=True, index=True, nullable=False)
+    hashed_password = Column(String(255), nullable=False)
+
+    is_active = Column(Boolean, default=True)
+    is_superuser = Column(Boolean, default=False)
+
+    # relationship 
+    bookings = relationship("Booking", back_populates="owner")
+   
+
+
