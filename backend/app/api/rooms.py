@@ -9,7 +9,7 @@ from app.schemas.room import RoomCreate, RoomRead
 
 router = APIRouter()
 
-@router.post("/", response_model=RoomRead)
+@router.post("", response_model=RoomRead)
 async def create_room(room: RoomCreate, db: AsyncSession = Depends(get_db)):
     # check if room number already exists
     result = await db.execute(select(Room).where(Room.room_number == room.room_number))
@@ -31,7 +31,7 @@ async def create_room(room: RoomCreate, db: AsyncSession = Depends(get_db)):
     return new_room
 
 
-@router.get("/", response_model=List[RoomRead])
+@router.get("", response_model=List[RoomRead])
 async def read_rooms(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Room).offset(skip).limit(limit))
     rooms = result.scalars().all()

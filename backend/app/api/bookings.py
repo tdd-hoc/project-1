@@ -12,7 +12,7 @@ from app.models.user import User
 
 router = APIRouter()
 
-@router.post("/", response_model=BookingRead)
+@router.post("", response_model=BookingRead)
 async def create_booking(booking_data: BookingCreate, db: AsyncSession = Depends(get_db),
                          current_user: User = Depends(get_current_user)
                          ):
