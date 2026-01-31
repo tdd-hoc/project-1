@@ -1,0 +1,88 @@
+name: Build and Deploy HMS App
+
+on:
+  push:
+    branches: [ "production" ] # Chạy khi bạn push code vào nhánh main
+  workflow_dispatch:      # Cho phép bấm nút chạy thủ công
+
+env:
+  RESOURCE_GROUP: "HMS-Project-Group"
+  BACKEND_APP_NAME: "hms-backend"
+  FRONTEND_APP_NAME: "hms-frontend"
+
+jobs:
+  # ========================================================
+  # JOB 1: BUILD & DEPLOY BACKEND
+  # ========================================================
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Login to Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and Push Backend Image
+        run: |
+          # Dùng github.run_number để tự tăng version (v1, v2, v3...)
+          docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/project1-backend:v${{ github.run_number }} ./backend
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/project1-backend:v${{ github.run_number }}
+
+      - name: Deploy to Azure Container Apps (Backend)
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az containerapp update \
+              --name ${{ env.BACKEND_APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --image ${{ secrets.REGISTRY_LOGIN_SERVER }}/project1-backend:v${{ github.run_number }}
+
+  # ========================================================
+  # JOB 2: BUILD & DEPLOY FRONTEND
+  # ========================================================
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    needs: deploy-backend # Chạy sau khi Backend xong (để an toàn)
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Login to Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Login to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and Push Frontend Image
+        run: |
+          # QUAN TRỌNG: Truyền biến ENV vào lúc Build (vì GitHub không có file .env)
+          # Chúng ta tạo file .env tạm thời trước khi build
+          echo "VITE_API_URL=${{ secrets.VITE_API_URL }}" > ./frontend/.env
+          
+          docker build -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/project1-frontend:v${{ github.run_number }} ./frontend
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/project1-frontend:v${{ github.run_number }}
+
+      - name: Deploy to Azure Container Apps (Frontend)
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az containerapp update \
+              --name ${{ env.FRONTEND_APP_NAME }} \
+              --resource-group ${{ env.RESOURCE_GROUP }} \
+              --image ${{ secrets.REGISTRY_LOGIN_SERVER }}/project1-frontend:v${{ github.run_number }}

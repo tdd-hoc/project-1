@@ -1,33 +1,46 @@
-import { useEffect, useState } from 'react'
-import api from  './api'
-function App() {
-  const [error, setError] = useState('')
-  const [message, setMessage]= useState('londing')
-  useEffect(() => {
-    api.get('/')
-      .then(res => setMessage(res.data.message))
-      .catch(err =>{
-        console.error(err)
-        setError('Cannot connect to backend. is it running ?')
-      })
-  }, [])
+// src/App.jsx
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Dashboard from './pages/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
+import { BrowserRouter, Route,  Routes } from 'react-router-dom';
+import Rooms from './pages/Rooms';
+import Bookings from './pages/Bookings';
+
+export default function App() {
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      <div className="bg-white p-8 rounded shadow-md text-center">
-        <h1 className="text-2xl font-bold mb-4">Hotel Management System</h1>
-        
-        {error ? (
-          <p className="text-red-500">{error}</p>
-        ) : (
-          <p className="text-green-600 text-xl">Backend says: "{message}"</p>
-        )}
+    <BrowserRouter>
+      
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-        <div className="mt-4 text-sm text-gray-500">
-          Connected to: {import.meta.env.VITE_API_URL}
-        </div>
-      </div>
-    </div>
-  )
+          <Route 
+            path="/" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route path='/Rooms'
+          element={
+            <ProtectedRoute>
+              <Rooms/>
+            </ProtectedRoute>
+          }
+          />
+          <Route 
+            path="/bookings" 
+            element={
+              <ProtectedRoute>
+                <Bookings />
+              </ProtectedRoute>
+            } 
+          />
+        </Routes>
+
+    </BrowserRouter>
+  );
 }
-
-export default App

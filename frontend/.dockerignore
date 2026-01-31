@@ -1,0 +1,30 @@
+# 1. Ignore dependencies (We install these fresh inside Docker)
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-lock.yaml
+
+# 2. Ignore build output (We build fresh inside Docker)
+dist
+build
+
+# 3. Ignore git history (Reduces size significantly)
+.git
+.gitignore
+
+# 4. Ignore Docker files (Don't need to copy the instructions into the image)
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# 5. Ignore Editor/OS junk
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# 6. Ignore local environment overrides (Keep .env, but ignore .env.local)
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

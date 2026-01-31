@@ -29,6 +29,9 @@ COPY pyproject.toml uv.lock ./
 # --no-dev: Skips testing tools
 RUN uv sync --frozen --no-dev
 
+# Thêm dòng này để Docker biết đường tìm uvicorn trong .venv
+ENV PATH="/app/.venv/bin:$PATH"
+
 # Stage 5: Copy Your Application Code
 COPY . .
 
@@ -38,4 +41,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]  
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]  
